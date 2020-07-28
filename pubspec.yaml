@@ -1,0 +1,42 @@
+name: masamune_calendar
+description: >-
+  Plugin for implementing the calendar function.
+version: 0.1.0
+homepage: https://mathru.net
+repository: https://github.com/mathrunet/flutter_masamune_calendar
+
+environment:
+  sdk: ">=2.6.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # Firebase
+  firebase_core: ^0.4.4+3
+  firebase_auth: ^0.16.0
+  # Masamune
+  masamune_flutter: ^0.3.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  # Masamune
+  masamune_test: ^0.1.0
+  
+# dependency_overrides:
+#   masamune_core:
+#     path: ../masamune_core/
+#   masamune_mobile:
+#     path: ../masamune_mobile/
+#   masamune_localize:
+#     path: ../masamune_localize/
+#   masamune_firebase:
+#     path: ../masamune_firebase/
+#   masamune_flutter:
+#     path: ../masamune_flutter/
+
+# For information on the generic Dart part of this file, see the
+# following page: https://dart.dev/tools/pub/pubspec
+
+# The following section is specific to Flutter.
+flutter:
