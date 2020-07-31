@@ -24,6 +24,12 @@ class UICalendar extends StatefulWidget {
   /// [expand]: Display the calendar in the full width of the parent widget.
   /// [heightOfDayOfWeekLabel]: DayOfWeek label height.
   /// [calendarContentBorder]: Specify all borders of the calendar.
+  /// [dayBuilder]: Day builder.
+  /// [selectedDayBuilder]: Selected day builder.
+  /// [todayDayBuilder]: Today day builder.
+  /// [markersBuilder]: Markers builder.
+  /// [onDaySelect]: What happens when a date is selected.
+  /// [onDayLongPressed]: What happens when a date is long pressed.
   UICalendar(
       {Key key,
       this.events,
@@ -38,6 +44,12 @@ class UICalendar extends StatefulWidget {
       this.expand = false,
       this.heightOfDayOfWeekLabel = 20,
       this.calendarContentBorder,
+      this.dayBuilder,
+      this.selectedDayBuilder,
+      this.todayDayBuilder,
+      this.markersBuilder,
+      this.onDaySelect,
+      this.onDayLongPressed,
       this.animationTime = const Duration(milliseconds: 300)})
       : super(key: key);
 
@@ -79,6 +91,24 @@ class UICalendar extends StatefulWidget {
 
   /// Animation time.
   final Duration animationTime;
+
+  /// Day builder.
+  final FullBuilder dayBuilder;
+
+  /// Selected day builder.
+  final FullBuilder selectedDayBuilder;
+
+  /// Today day builder.
+  final FullBuilder todayDayBuilder;
+
+  /// Markers builder.
+  final FullListBuilder markersBuilder;
+
+  /// What happens when a date is selected.
+  final OnDaySelected onDaySelect;
+
+  /// What happens when a date is long pressed.
+  final OnDaySelected onDayLongPressed;
 
   @override
   _UICalendarState createState() => _UICalendarState();
@@ -279,62 +309,72 @@ class _UICalendarState extends State<UICalendar> with TickerProviderStateMixin {
         formatButtonVisible: false,
       ),
       builders: CalendarBuilders(
-          dayBuilder: (context, date, events) {
-            return Container(
-              padding: const EdgeInsets.only(top: 5.0, left: 6.0),
-              color: context.theme.backgroundColor,
-              constraints: BoxConstraints.expand(),
-              child: Text(
-                "${date.day}",
-                style: TextStyle(fontSize: 16.0),
-              ),
-            );
-          },
-          selectedDayBuilder: (context, date, _) {
-            return FadeTransition(
-              opacity:
-                  Tween(begin: 0.0, end: 1.0).animate(_animationController),
-              child: Container(
-                padding: const EdgeInsets.only(top: 5.0, left: 6.0),
-                color: context.theme.primaryColor,
-                constraints: BoxConstraints.expand(),
-                width: 100,
-                height: 100,
-                child: Text(
-                  "${date.day}",
-                  style: TextStyle(fontSize: 16.0, color: Colors.white),
-                ),
-              ),
-            );
-          },
-          todayDayBuilder: (context, date, _) {
-            return Container(
-              padding: const EdgeInsets.only(top: 5.0, left: 6.0),
-              color: context.theme.primaryColor.withOpacity(0.5),
-              constraints: BoxConstraints.expand(),
-              child: Text(
-                "${date.day}",
-                style: TextStyle(fontSize: 16.0, color: Colors.white),
-              ),
-            );
-          },
-          markersBuilder: (context, date, events, holidays) => [
-                if (events.isNotEmpty)
-                  Positioned(
-                    right: 1,
-                    bottom: 1,
-                    child: _buildEventsMarker(date, events),
+          dayBuilder: this.widget.dayBuilder ??
+              (context, date, events) {
+                return Container(
+                  padding: const EdgeInsets.only(top: 5.0, left: 6.0),
+                  color: context.theme.backgroundColor,
+                  constraints: BoxConstraints.expand(),
+                  child: Text(
+                    "${date.day}",
+                    style: TextStyle(fontSize: 16.0),
                   ),
-                if (holidays.isNotEmpty)
-                  Positioned(
-                    right: -2,
-                    top: -2,
-                    child: _buildHolidaysMarker(),
+                );
+              },
+          selectedDayBuilder: this.widget.selectedDayBuilder ??
+              (context, date, _) {
+                return FadeTransition(
+                  opacity:
+                      Tween(begin: 0.0, end: 1.0).animate(_animationController),
+                  child: Container(
+                    padding: const EdgeInsets.only(top: 5.0, left: 6.0),
+                    color: context.theme.primaryColor,
+                    constraints: BoxConstraints.expand(),
+                    width: 100,
+                    height: 100,
+                    child: Text(
+                      "${date.day}",
+                      style: TextStyle(fontSize: 16.0, color: Colors.white),
+                    ),
                   ),
-              ]),
+                );
+              },
+          todayDayBuilder: this.widget.todayDayBuilder ??
+              (context, date, _) {
+                return Container(
+                  padding: const EdgeInsets.only(top: 5.0, left: 6.0),
+                  color: context.theme.primaryColor.withOpacity(0.5),
+                  constraints: BoxConstraints.expand(),
+                  child: Text(
+                    "${date.day}",
+                    style: TextStyle(fontSize: 16.0, color: Colors.white),
+                  ),
+                );
+              },
+          markersBuilder: this.widget.markersBuilder ??
+              (context, date, events, holidays) => [
+                    if (events.isNotEmpty)
+                      Positioned(
+                        right: 1,
+                        bottom: 1,
+                        child: _buildEventsMarker(date, events),
+                      ),
+                    if (holidays.isNotEmpty)
+                      Positioned(
+                        right: -2,
+                        top: -2,
+                        child: _buildHolidaysMarker(),
+                      ),
+                  ]),
       onDaySelected: (date, events, holidays) {
         _onDaySelected(date, events, holidays);
+        if (this.widget.onDaySelect != null)
+          this.widget.onDaySelect(date, events, holidays);
         _animationController.forward(from: 0.0);
+      },
+      onDayLongPressed: (day, events, holidays) {
+        if (this.widget.onDayLongPressed != null)
+          this.widget.onDayLongPressed(day, events, holidays);
       },
       onVisibleDaysChanged: _onVisibleDaysChanged,
       onCalendarCreated: _onCalendarCreated,
