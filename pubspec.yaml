@@ -1,7 +1,7 @@
 name: masamune_calendar
 description: >-
   Plugin for implementing the calendar function.
-version: 0.4.0
+version: 0.4.0+2y
 homepage: https://mathru.net
 repository: https://github.com/mathrunet/flutter_masamune_calendar
 

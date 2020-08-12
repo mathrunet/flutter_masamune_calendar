@@ -2,6 +2,73 @@ part of masamune.calendar;
 
 /// Widget for booking calendar.
 class ReservationCalendar extends UIWidget {
+  /// The default checker passed to ReservationCalendar.
+  ///
+  /// [reservingDuration]: The time you are trying to book.
+  /// [reservationCountMap]: Count map.
+  /// Obtained from [ReservationCalendar.reservationCountMap()].
+  /// [maxReservationCount]: Maximum number of people that can be reserved.
+  /// [duration]: Calendar interval.
+  static bool Function(DateTime) reservationChecker(
+      {@required Duration reservingDuration,
+      @required Map<DateTime, int> reservationCountMap,
+      int maxReservationCount = 1,
+      Duration duration = const Duration(minutes: 30)}) {
+    return (dateTime) {
+      for (DateTime time = dateTime;
+          time.millisecondsSinceEpoch <
+              dateTime.millisecondsSinceEpoch +
+                  reservingDuration.inMilliseconds;
+          time = time.add(duration)) {
+        if (reservationCountMap.containsKey(time) &&
+            reservationCountMap[time] >= maxReservationCount) return false;
+      }
+      return true;
+    };
+  }
+
+  /// Acquiring reservation data for reservations made by multiple staff.
+  ///
+  /// [reservationData]: Saved reservation data.
+  /// [startTime]: The start time to get.
+  /// [endTime]: The end time to get.
+  /// [duration]: Interval to get.
+  /// [startTimeKey]: The key of the start time in the reservation data.
+  /// [endTimeKey]: The key of the end time in the reservation data.
+  static Map<DateTime, int> reservationCountMap(
+      {@required Iterable<IDataDocument> reservationData,
+      DateTime startTime,
+      DateTime endTime,
+      Duration duration = const Duration(minutes: 30),
+      String startTimeKey = "startTime",
+      String endTimeKey = "endTime"}) {
+    DateTime now = DateTime.now();
+    if (startTime == null)
+      startTime = DateTime(now.year, now.month, now.day, 0, 0, 0);
+    if (endTime == null)
+      endTime = DateTime(now.year, now.month, now.day, 0, 0, 0)
+          .add(Duration(days: 8));
+    Map<DateTime, int> reservation = {};
+    for (DateTime time = startTime;
+        time.millisecondsSinceEpoch <= endTime.millisecondsSinceEpoch;
+        time = time.add(duration)) {
+      int start = time.millisecondsSinceEpoch;
+      int end = start + duration.inMilliseconds;
+      reservation[time] =
+          reservationData?.fold<int>(0, (previousValue, element) {
+        if (element.getInt(startTimeKey) <= start &&
+            start < element.getInt(endTimeKey)) {
+          previousValue++;
+        } else if (element.getInt(startTimeKey) < end &&
+            end <= element.getInt(endTimeKey)) {
+          previousValue++;
+        }
+        return previousValue;
+      });
+    }
+    return reservation;
+  }
+
   /// Processing when tapped.
   final void Function(DateTime dateTime) onTap;
 

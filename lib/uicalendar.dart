@@ -457,7 +457,7 @@ class _UICalendarState extends State<UICalendar> with TickerProviderStateMixin {
                         Padding(
                             padding: const EdgeInsets.only(right: 10),
                             child: Text("${event.timeString}")),
-                        Text("${event.title}")
+                        Flexible(child: Text("${event.title}"))
                       ],
                     ),
                     subtitle: Text(event.text),
@@ -472,7 +472,7 @@ class _UICalendarState extends State<UICalendar> with TickerProviderStateMixin {
                         Padding(
                             padding: const EdgeInsets.only(right: 10),
                             child: Text("${event.timeString}")),
-                        Text("${event.title}")
+                        Flexible(child: Text("${event.title}"))
                       ],
                     ),
                     onTap: () {
