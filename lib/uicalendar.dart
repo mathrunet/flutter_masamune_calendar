@@ -24,6 +24,8 @@ class UICalendar extends StatefulWidget {
   /// [expand]: Display the calendar in the full width of the parent widget.
   /// [heightOfDayOfWeekLabel]: DayOfWeek label height.
   /// [calendarContentBorder]: Specify all borders of the calendar.
+  /// [highlightTodayColor]: Color for highlighting today.
+  /// [highlightSelectedDayColor]: The color when the selected date is highlighted.
   /// [dayBuilder]: Day builder.
   /// [selectedDayBuilder]: Selected day builder.
   /// [todayDayBuilder]: Today day builder.
@@ -48,6 +50,8 @@ class UICalendar extends StatefulWidget {
       this.calendarContentBorder,
       this.dayBuilder,
       this.selectedDayBuilder,
+      this.highlightTodayColor,
+      this.highlightSelectedDayColor,
       this.highlightSelectedDay = true,
       this.highlightToday = true,
       this.todayDayBuilder,
@@ -87,8 +91,14 @@ class UICalendar extends StatefulWidget {
   /// True to highlight today.
   final bool highlightToday;
 
+  /// Color for highlighting today.
+  final Color highlightTodayColor;
+
   /// True to highlight the selected days.
   final bool highlightSelectedDay;
+
+  /// The color when the selected date is highlighted.
+  final Color highlightSelectedDayColor;
 
   /// Builder for getting the title.
   final String Function(IDataDocument document) titleBuilder;
@@ -295,7 +305,7 @@ class _UICalendarState extends State<UICalendar> with TickerProviderStateMixin {
       initialCalendarFormat: CalendarFormat.month,
       formatAnimation: FormatAnimation.slide,
       startingDayOfWeek: StartingDayOfWeek.sunday,
-      availableGestures: AvailableGestures.all,
+      availableGestures: AvailableGestures.horizontalSwipe,
       availableCalendarFormats: const {
         CalendarFormat.month: Const.empty,
         CalendarFormat.week: Const.empty,
@@ -339,7 +349,8 @@ class _UICalendarState extends State<UICalendar> with TickerProviderStateMixin {
                             .animate(_animationController),
                         child: Container(
                           padding: const EdgeInsets.only(top: 5.0, left: 6.0),
-                          color: context.theme.primaryColor,
+                          color: this.widget.highlightSelectedDayColor ??
+                              context.theme.primaryColor,
                           constraints: BoxConstraints.expand(),
                           width: 100,
                           height: 100,
@@ -357,7 +368,8 @@ class _UICalendarState extends State<UICalendar> with TickerProviderStateMixin {
                   ? (context, date, _) {
                       return Container(
                         padding: const EdgeInsets.only(top: 5.0, left: 6.0),
-                        color: context.theme.primaryColor.withOpacity(0.5),
+                        color: this.widget.highlightTodayColor ??
+                            context.theme.primaryColor.withOpacity(0.5),
                         constraints: BoxConstraints.expand(),
                         child: Text(
                           "${date.day}",

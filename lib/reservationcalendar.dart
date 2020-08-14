@@ -47,7 +47,8 @@ class ReservationCalendar extends UIWidget {
       startTime = DateTime(now.year, now.month, now.day, 0, 0, 0);
     if (endTime == null)
       endTime = DateTime(now.year, now.month, now.day, 0, 0, 0)
-          .add(Duration(days: 8));
+          .add(Duration(days: 7));
+    endTime = endTime.add(Duration(days: 1));
     Map<DateTime, int> reservation = {};
     for (DateTime time = startTime;
         time.millisecondsSinceEpoch <= endTime.millisecondsSinceEpoch;
