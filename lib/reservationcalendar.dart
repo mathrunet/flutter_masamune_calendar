@@ -232,7 +232,7 @@ class ReservationCalendar extends UIWidget {
     DateTime dateTime = DateTime(
         date.year, date.month, date.day, time.hour, time.minute, time.second);
     bool enabled = (this.checker != null) ? this.checker(dateTime) : false;
-    return GestureDetector(
+    return InkWell(
         onTap: () {
           if (!enabled) return;
           if (this.onTap != null) this.onTap(dateTime);
