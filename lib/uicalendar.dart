@@ -29,6 +29,8 @@ class UICalendar extends StatefulWidget {
   /// [dayBuilder]: Day builder.
   /// [selectedDayBuilder]: Selected day builder.
   /// [todayDayBuilder]: Today day builder.
+  /// [titleKey]: The name key.
+  /// [textKey]: The text key.
   /// [markersBuilder]: Markers builder.
   /// [onDaySelect]: What happens when a date is selected.
   /// [onDayLongPressed]: What happens when a date is long pressed.
@@ -42,6 +44,8 @@ class UICalendar extends StatefulWidget {
       this.onTap,
       this.startTimeKey = "startTime",
       this.endTimeKey = "endTime",
+      this.titleKey = "name",
+      this.textKey = "text",
       this.titleBuilder,
       this.textBuilder,
       this.allDayKey = "allDay",
@@ -105,6 +109,12 @@ class UICalendar extends StatefulWidget {
 
   /// Builder for getting text.
   final String Function(IDataDocument document) textBuilder;
+
+  /// The name key.
+  final String titleKey;
+
+  /// The text key.
+  final String textKey;
 
   /// True if the event is all day.
   final String allDayKey;
@@ -198,10 +208,10 @@ class _UICalendarState extends State<UICalendar> with TickerProviderStateMixin {
             data: doc,
             title: this.widget.titleBuilder != null
                 ? this.widget.titleBuilder(doc)
-                : Const.empty,
+                : doc.getString(this.widget.titleKey) ?? Const.empty,
             text: this.widget.textBuilder != null
                 ? this.widget.textBuilder(doc)
-                : Const.empty,
+                : doc.getString(this.widget.textKey) ?? Const.empty,
             allDay: doc.getBool(this.widget.allDayKey, false)));
       } else {
         this._events[startDay] = [
@@ -211,10 +221,10 @@ class _UICalendarState extends State<UICalendar> with TickerProviderStateMixin {
               data: doc,
               title: this.widget.titleBuilder != null
                   ? this.widget.titleBuilder(doc)
-                  : Const.empty,
+                  : doc.getString(this.widget.titleKey) ?? Const.empty,
               text: this.widget.textBuilder != null
                   ? this.widget.textBuilder(doc)
-                  : Const.empty,
+                  : doc.getString(this.widget.textKey) ?? Const.empty,
               allDay: doc.getBool(this.widget.allDayKey, false))
         ];
       }
@@ -239,10 +249,10 @@ class _UICalendarState extends State<UICalendar> with TickerProviderStateMixin {
             data: doc,
             title: this.widget.titleBuilder != null
                 ? this.widget.titleBuilder(doc)
-                : Const.empty,
+                : doc.getString(this.widget.titleKey) ?? Const.empty,
             text: this.widget.textBuilder != null
                 ? this.widget.textBuilder(doc)
-                : Const.empty,
+                : doc.getString(this.widget.textKey) ?? Const.empty,
             allDay: true));
       } else {
         this._events[startDay] = [
@@ -251,10 +261,10 @@ class _UICalendarState extends State<UICalendar> with TickerProviderStateMixin {
               data: doc,
               title: this.widget.titleBuilder != null
                   ? this.widget.titleBuilder(doc)
-                  : Const.empty,
+                  : doc.getString(this.widget.titleKey) ?? Const.empty,
               text: this.widget.textBuilder != null
                   ? this.widget.textBuilder(doc)
-                  : Const.empty,
+                  : doc.getString(this.widget.textKey) ?? Const.empty,
               allDay: true)
         ];
       }
