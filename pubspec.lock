@@ -15,6 +15,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.0"
+  bordered_text:
+    dependency: transitive
+    description:
+      name: bordered_text
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.0"
   cached_network_image:
     dependency: transitive
     description:
@@ -167,6 +174,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.14.1"
+  flutter_reorderable_list:
+    dependency: transitive
+    description:
+      name: flutter_reorderable_list
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.1.4"
   flutter_sequence_animation:
     dependency: transitive
     description:
@@ -239,7 +253,7 @@ packages:
       name: masamune_flutter
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.5.0+9"
+    version: "0.5.1"
   masamune_localize:
     dependency: transitive
     description:
