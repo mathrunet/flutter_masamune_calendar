@@ -36,11 +36,17 @@ class UICalendar extends StatefulWidget {
   /// [onDayLongPressed]: What happens when a date is long pressed.
   /// [highlightToday]: True to highlight today.
   /// [highlightSelectedDay]: True to highlight the selected days.
+  /// [markerIcon]: Icons for markers.
+  /// [markerType]: Marker type of calendar.
+  /// [markerItemBuilder]: Builder for each item in the marker.
   UICalendar(
       {Key key,
       this.events,
       this.holidays,
       this.initialDay,
+      this.markerIcon,
+      this.markerType = UICalendarMarkerType.count,
+      this.markerItemBuilder,
       this.onTap,
       this.startTimeKey = "startTime",
       this.endTimeKey = "endTime",
@@ -63,7 +69,10 @@ class UICalendar extends StatefulWidget {
       this.onDaySelect,
       this.onDayLongPressed,
       this.animationTime = const Duration(milliseconds: 300)})
-      : super(key: key);
+      : assert(markerType == UICalendarMarkerType.icon && markerIcon != null ||
+            markerType == UICalendarMarkerType.list &&
+                markerItemBuilder != null),
+        super(key: key);
 
   /// Display the calendar in the full width of the parent widget.
   final bool expand;
@@ -123,22 +132,41 @@ class UICalendar extends StatefulWidget {
   final Duration animationTime;
 
   /// Day builder.
-  final FullBuilder dayBuilder;
+  final Widget Function(
+      BuildContext context, DateTime date, List<EventData> events) dayBuilder;
 
   /// Selected day builder.
-  final FullBuilder selectedDayBuilder;
+  final Widget Function(
+          BuildContext context, DateTime date, List<EventData> events)
+      selectedDayBuilder;
 
   /// Today day builder.
-  final FullBuilder todayDayBuilder;
+  final Widget Function(
+          BuildContext context, DateTime date, List<EventData> events)
+      todayDayBuilder;
 
   /// Markers builder.
-  final FullListBuilder markersBuilder;
+  final List<Widget> Function(BuildContext context, DateTime date,
+      List<EventData> events, List<EventData> holidays) markersBuilder;
 
   /// What happens when a date is selected.
-  final OnDaySelected onDaySelect;
+  final void Function(
+          DateTime day, List<EventData> events, List<EventData> holidays)
+      onDaySelect;
 
   /// What happens when a date is long pressed.
-  final OnDaySelected onDayLongPressed;
+  final void Function(
+          DateTime day, List<EventData> events, List<EventData> holidays)
+      onDayLongPressed;
+
+  /// Marker type of calendar.
+  final UICalendarMarkerType markerType;
+
+  /// Builder for each item in the marker.
+  final Widget Function(EventData event) markerItemBuilder;
+
+  /// Icons for markers.
+  final Widget markerIcon;
 
   @override
   _UICalendarState createState() => _UICalendarState();
@@ -176,7 +204,8 @@ class _UICalendarState extends State<UICalendar> with TickerProviderStateMixin {
     setState(() {});
   }
 
-  void _onDaySelected(DateTime day, List events, List holidays) {
+  void _onDaySelected(
+      DateTime day, List<EventData> events, List<EventData> holidays) {
     setState(() {});
   }
 
@@ -339,86 +368,161 @@ class _UICalendarState extends State<UICalendar> with TickerProviderStateMixin {
         formatButtonVisible: false,
       ),
       builders: CalendarBuilders(
-          dayBuilder: this.widget.dayBuilder ??
-              (context, date, events) {
-                return Container(
-                  padding: const EdgeInsets.only(top: 5.0, left: 6.0),
-                  color: context.theme.backgroundColor,
-                  constraints: BoxConstraints.expand(),
-                  child: Text(
-                    "${date.day}",
-                    style: TextStyle(fontSize: 16.0),
-                  ),
-                );
-              },
-          selectedDayBuilder: this.widget.selectedDayBuilder ??
-              (this.widget.highlightSelectedDay
-                  ? (context, date, _) {
-                      return FadeTransition(
-                        opacity: Tween(begin: 0.0, end: 1.0)
-                            .animate(_animationController),
-                        child: Container(
-                          padding: const EdgeInsets.only(top: 5.0, left: 6.0),
-                          color: this.widget.highlightSelectedDayColor ??
-                              context.theme.primaryColor,
-                          constraints: BoxConstraints.expand(),
-                          width: 100,
-                          height: 100,
-                          child: Text(
-                            "${date.day}",
-                            style:
-                                TextStyle(fontSize: 16.0, color: Colors.white),
-                          ),
-                        ),
-                      );
-                    }
-                  : null),
-          todayDayBuilder: this.widget.todayDayBuilder ??
-              (this.widget.highlightToday
-                  ? (context, date, _) {
-                      return Container(
+        dayBuilder: (context, date, events) {
+          if (this.widget.dayBuilder != null) {
+            return this
+                .widget
+                .dayBuilder(context, date, events.cast<EventData>());
+          }
+          return Container(
+            padding: const EdgeInsets.only(top: 5.0, left: 6.0),
+            color: context.theme.backgroundColor,
+            constraints: BoxConstraints.expand(),
+            child: Text(
+              "${date.day}",
+              style: TextStyle(fontSize: 16.0),
+            ),
+          );
+        },
+        selectedDayBuilder: this.widget.selectedDayBuilder != null
+            ? (context, date, events) {
+                return this.widget.selectedDayBuilder(
+                    context, date, events.cast<EventData>());
+              }
+            : (this.widget.highlightSelectedDay
+                ? (context, date, _) {
+                    return FadeTransition(
+                      opacity: Tween(begin: 0.0, end: 1.0)
+                          .animate(_animationController),
+                      child: Container(
                         padding: const EdgeInsets.only(top: 5.0, left: 6.0),
-                        color: this.widget.highlightTodayColor ??
-                            context.theme.primaryColor.withOpacity(0.5),
+                        color: this.widget.highlightSelectedDayColor ??
+                            context.theme.primaryColor,
                         constraints: BoxConstraints.expand(),
+                        width: 100,
+                        height: 100,
                         child: Text(
                           "${date.day}",
                           style: TextStyle(fontSize: 16.0, color: Colors.white),
                         ),
-                      );
-                    }
-                  : null),
-          markersBuilder: this.widget.markersBuilder ??
-              (context, date, events, holidays) => [
-                    if (events.isNotEmpty)
-                      Positioned(
-                        right: 1,
-                        bottom: 1,
-                        child: _buildEventsMarker(date, events),
                       ),
-                    if (holidays.isNotEmpty)
-                      Positioned(
-                        right: -2,
-                        top: -2,
-                        child: _buildHolidaysMarker(),
+                    );
+                  }
+                : null),
+        todayDayBuilder: this.widget.todayDayBuilder != null
+            ? (context, date, events) {
+                return this
+                    .widget
+                    .todayDayBuilder(context, date, events.cast<EventData>());
+              }
+            : (this.widget.highlightToday
+                ? (context, date, _) {
+                    return Container(
+                      padding: const EdgeInsets.only(top: 5.0, left: 6.0),
+                      color: this.widget.highlightTodayColor ??
+                          context.theme.primaryColor.withOpacity(0.5),
+                      constraints: BoxConstraints.expand(),
+                      child: Text(
+                        "${date.day}",
+                        style: TextStyle(fontSize: 16.0, color: Colors.white),
                       ),
-                  ]),
+                    );
+                  }
+                : null),
+        markersBuilder: (context, date, events, holidays) {
+          if (this.widget.markersBuilder != null) {
+            return this.widget.markersBuilder(context, date,
+                events.cast<EventData>(), holidays.cast<EventData>());
+          }
+          return _defaultMarkers(context, date, events.cast<EventData>(),
+              holidays.cast<EventData>());
+        },
+      ),
       onDaySelected: (date, events, holidays) {
-        _onDaySelected(date, events, holidays);
+        final firstDate = DateTime(date.year, date.month, date.day);
+        _onDaySelected(
+            firstDate, events.cast<EventData>(), holidays.cast<EventData>());
         if (this.widget.onDaySelect != null)
-          this.widget.onDaySelect(date, events, holidays);
+          this.widget.onDaySelect(
+              firstDate, events.cast<EventData>(), holidays.cast<EventData>());
         _animationController.forward(from: 0.0);
       },
-      onDayLongPressed: (day, events, holidays) {
+      onDayLongPressed: (date, events, holidays) {
+        final firstDate = DateTime(date.year, date.month, date.day);
         if (this.widget.onDayLongPressed != null)
-          this.widget.onDayLongPressed(day, events, holidays);
+          this.widget.onDayLongPressed(
+              firstDate, events.cast<EventData>(), holidays.cast<EventData>());
       },
       onVisibleDaysChanged: _onVisibleDaysChanged,
       onCalendarCreated: _onCalendarCreated,
     );
   }
 
-  Widget _buildEventsMarker(DateTime date, List events) {
+  List<Widget> _defaultMarkers(BuildContext context, DateTime date,
+      List<EventData> events, List<EventData> holidays) {
+    switch (this.widget.markerType) {
+      case (UICalendarMarkerType.icon):
+        return [
+          Container(
+            constraints: BoxConstraints.expand(),
+            padding: const EdgeInsets.only(
+              top: 30,
+              left: 4,
+              right: 4,
+              bottom: 4,
+            ),
+            child: Center(
+              child: this.widget.markerIcon,
+            ),
+          )
+        ];
+      case (UICalendarMarkerType.list):
+        return [
+          DefaultTextStyle(
+            style: TextStyle(
+                fontSize: 10,
+                color: _calendarController.isToday(date)
+                    ? Colors.white
+                    : context.theme.textTheme.bodyText1.color),
+            child: Container(
+              constraints: BoxConstraints.expand(),
+              padding: const EdgeInsets.only(
+                top: 30,
+                left: 4,
+                right: 0,
+                bottom: 0,
+              ),
+              child: Wrap(
+                direction: Axis.vertical,
+                children: [
+                  ...events.mapAndRemoveEmpty(
+                      (item) => this.widget.markerItemBuilder(item)),
+                  ...holidays.mapAndRemoveEmpty(
+                      (item) => this.widget.markerItemBuilder(item))
+                ],
+              ),
+            ),
+          )
+        ];
+      default:
+        return [
+          if (events.isNotEmpty)
+            Positioned(
+              right: 1,
+              bottom: 1,
+              child: _buildEventsMarker(date, events),
+            ),
+          if (holidays.isNotEmpty)
+            Positioned(
+              right: -2,
+              top: -2,
+              child: _buildHolidaysMarker(),
+            ),
+        ];
+    }
+  }
+
+  Widget _buildEventsMarker(DateTime date, List<EventData> events) {
     return AnimatedContainer(
       duration: this.widget.animationTime,
       decoration: BoxDecoration(
@@ -556,4 +660,16 @@ class EventData {
       return tmp;
     return "$tmp ${this.endTime.hour.format("00")}:${this.endTime.minute.format("00")}";
   }
+}
+
+/// Marker type of calendar.
+enum UICalendarMarkerType {
+  /// Show a number of events.
+  count,
+
+  /// Show a icon.
+  icon,
+
+  /// Show a list of events.
+  list
 }
