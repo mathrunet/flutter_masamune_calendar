@@ -71,7 +71,8 @@ class UICalendar extends StatefulWidget {
       this.animationTime = const Duration(milliseconds: 300)})
       : assert(markerType == UICalendarMarkerType.icon && markerIcon != null ||
             markerType == UICalendarMarkerType.list &&
-                markerItemBuilder != null),
+                markerItemBuilder != null ||
+            markerType == UICalendarMarkerType.count),
         super(key: key);
 
   /// Display the calendar in the full width of the parent widget.
