@@ -1,7 +1,7 @@
 name: masamune_calendar
 description: >-
   Plugin for implementing the calendar function.
-version: 0.5.1+3
+version: 0.6.0+1
 homepage: https://mathru.net
 repository: https://github.com/mathrunet/flutter_masamune_calendar
 
@@ -15,7 +15,7 @@ dependencies:
   intl: ^0.16.1
   simple_gesture_detector: ^0.1.4
   # Masamune
-  masamune_flutter: ^0.5.0
+  masamune_flutter: ^0.6.0
 
 dev_dependencies:
   flutter_test:

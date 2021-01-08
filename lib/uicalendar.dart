@@ -39,6 +39,10 @@ class UICalendar extends StatefulWidget {
   /// [markerIcon]: Icons for markers.
   /// [markerType]: Marker type of calendar.
   /// [markerItemBuilder]: Builder for each item in the marker.
+  /// [regularHolidays]: Regular holiday list.
+  /// [saturdayColor]: Saturday Color.
+  /// [holidayColor]: Holiday Colors.
+  /// [sundayColor]: Sunday Colors.
   UICalendar(
       {Key key,
       this.events,
@@ -64,16 +68,28 @@ class UICalendar extends StatefulWidget {
       this.highlightSelectedDayColor,
       this.highlightSelectedDay = true,
       this.highlightToday = true,
+      this.regularHolidays,
+      this.saturdayColor,
+      this.sundayColor,
+      this.holidayColor,
       this.todayDayBuilder,
       this.markersBuilder,
       this.onDaySelect,
       this.onDayLongPressed,
       this.animationTime = const Duration(milliseconds: 300)})
-      : assert(markerType == UICalendarMarkerType.icon && markerIcon != null ||
-            markerType == UICalendarMarkerType.list &&
-                markerItemBuilder != null ||
-            markerType == UICalendarMarkerType.count),
-        super(key: key);
+      : super(key: key);
+
+  /// Regular holiday list.
+  final Map<DateTime, String> regularHolidays;
+
+  /// Saturday Color.
+  final Color saturdayColor;
+
+  /// Holiday Colors.
+  final Color holidayColor;
+
+  /// Sunday Colors.
+  final Color sundayColor;
 
   /// Display the calendar in the full width of the parent widget.
   final bool expand;
@@ -171,6 +187,27 @@ class UICalendar extends StatefulWidget {
 
   @override
   _UICalendarState createState() => _UICalendarState();
+
+  /// Holidays in Japan.
+  static final Map<DateTime, String> japaneseHolidays = {
+    DateTime(2021, 1, 1): "元日",
+    DateTime(2021, 1, 11): "成人の日",
+    DateTime(2021, 2, 11): "建国記念の日",
+    DateTime(2021, 2, 23): "天皇誕生日",
+    DateTime(2021, 3, 20): "春分の日",
+    DateTime(2021, 4, 29): "昭和の日",
+    DateTime(2021, 5, 3): "憲法記念日",
+    DateTime(2021, 5, 4): "みどりの日",
+    DateTime(2021, 5, 5): "こどもの日",
+    DateTime(2021, 7, 22): "海の日",
+    DateTime(2021, 7, 23): "スポーツの日",
+    DateTime(2021, 8, 8): "山の日",
+    DateTime(2021, 8, 9): "休日",
+    DateTime(2021, 9, 20): "敬老の日",
+    DateTime(2021, 9, 23): "秋分の日",
+    DateTime(2021, 11, 3): "文化の日",
+    DateTime(2021, 11, 23): "勤労感謝の日",
+  };
 }
 
 class _UICalendarState extends State<UICalendar> with TickerProviderStateMixin {
@@ -381,7 +418,10 @@ class _UICalendarState extends State<UICalendar> with TickerProviderStateMixin {
             constraints: BoxConstraints.expand(),
             child: Text(
               "${date.day}",
-              style: TextStyle(fontSize: 16.0),
+              style: TextStyle(
+                fontSize: 16.0,
+                color: this._dayTextColor(date),
+              ),
             ),
           );
         },
@@ -457,6 +497,23 @@ class _UICalendarState extends State<UICalendar> with TickerProviderStateMixin {
       onVisibleDaysChanged: _onVisibleDaysChanged,
       onCalendarCreated: _onCalendarCreated,
     );
+  }
+
+  Color _dayTextColor(DateTime date) {
+    if (this.widget.sundayColor != null && date.weekday == DateTime.sunday) {
+      return this.widget.sundayColor;
+    }
+    if (this.widget.holidayColor != null &&
+        this.widget.regularHolidays != null &&
+        this.widget.regularHolidays.keys.any((element) =>
+            element.month == date.month && element.day == date.day)) {
+      return this.widget.holidayColor;
+    }
+    if (this.widget.saturdayColor != null &&
+        date.weekday == DateTime.saturday) {
+      return this.widget.saturdayColor;
+    }
+    return null;
   }
 
   List<Widget> _defaultMarkers(BuildContext context, DateTime date,
